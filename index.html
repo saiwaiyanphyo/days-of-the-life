@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Days of the Past</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #f6f5f0;
+      color: #1a1a1a;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      min-height: 100vh;
+      padding: 56px 24px 100px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Header ─────────────────────────────────── */
+    .app-header {
+      text-align: center;
+      margin-bottom: 60px;
+    }
+    .app-header h1 {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: clamp(2.4rem, 6vw, 3.8rem);
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #111;
+    }
+    .app-header p {
+      margin-top: 12px;
+      font-size: 0.82rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+      color: #aaa;
+    }
+
+    /* ── Input Section ──────────────────────────── */
+    #input-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+      max-width: 360px;
+    }
+    .field { width: 100%; }
+    .field label {
+      display: block;
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 9px;
+    }
+    .field input[type="date"] {
+      width: 100%;
+      background: #fff;
+      border: 1px solid #dedad2;
+      color: #1a1a1a;
+      padding: 13px 16px;
+      font-size: 1rem;
+      font-family: inherit;
+      border-radius: 7px;
+      outline: none;
+      transition: border-color 0.2s;
+      cursor: pointer;
+    }
+    .field input[type="date"]:focus { border-color: #2563eb; }
+
+    .btn-primary {
+      width: 100%;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      padding: 13px;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-family: inherit;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover  { background: #333; }
+    .btn-primary:active { transform: scale(0.98); }
+
+    /* ── Results Section ────────────────────────── */
+    #results-section {
+      display: none;
+      width: 100%;
+      max-width: 1100px;
+      flex-direction: column;
+      gap: 32px;
+      animation: fadeUp 0.45s ease both;
+    }
+    #results-section.visible { display: flex; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid #dedad2;
+      color: #aaa;
+      padding: 7px 18px;
+      border-radius: 5px;
+      font-family: inherit;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      align-self: flex-start;
+    }
+    .btn-ghost:hover { border-color: #1a1a1a; color: #1a1a1a; }
+
+    /* ── Stats ──────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+      gap: 12px;
+    }
+    .stat-card {
+      background: #fff;
+      border: 1px solid #e8e4dc;
+      border-radius: 8px;
+      padding: 18px 20px;
+    }
+    .stat-card .s-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-bottom: 10px;
+    }
+    .stat-card .s-value {
+      font-size: 1.8rem;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      font-variant-numeric: tabular-nums;
+      color: #1a1a1a;
+    }
+    .stat-card.accent .s-value { color: #2563eb; }
+
+    /* ── Dot Grid ───────────────────────────────── */
+    .dot-card {
+      background: #fff;
+      border: 1px solid #e8e4dc;
+      border-radius: 8px;
+      padding: 24px;
+    }
+    .dot-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      gap: 12px;
+    }
+    .card-title {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #bbb;
+      margin-bottom: 0;
+    }
+    .view-toggle {
+      display: flex;
+      background: #f0ede6;
+      border-radius: 6px;
+      padding: 3px;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .view-toggle button {
+      background: transparent;
+      border: none;
+      padding: 5px 14px;
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #bbb;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+    }
+    .view-toggle button.active {
+      background: #fff;
+      color: #1a1a1a;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .canvas-wrap {
+      position: relative;
+      line-height: 0;
+      overflow: hidden;
+    }
+    #dots-canvas { display: block; }
+
+    #blink-dot {
+      position: absolute;
+      border-radius: 50%;
+      background: #2563eb;
+      animation: pulse 1.4s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes pulse {
+      0%   { opacity: 1;   box-shadow: 0 0 0 0   rgba(37,99,235,0.7); }
+      60%  { opacity: 0.3; box-shadow: 0 0 0 6px rgba(37,99,235,0);   }
+      100% { opacity: 1;   box-shadow: 0 0 0 0   rgba(37,99,235,0);   }
+    }
+
+    .dot-legend {
+      display: flex;
+      gap: 22px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      color: #bbb;
+    }
+    .ld {
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+    .ld.past   { background: #1a1a1a; }
+    .ld.now    { background: #2563eb; border-radius: 50%; }
+    .ld.future { background: #e8e4dc; border: 1px solid #d8d4cc; }
+
+    /* ── Facts ──────────────────────────────────── */
+    .facts-card .card-title { margin-bottom: 20px; }
+
+    .facts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .fact-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      padding: 14px 18px;
+      background: #fff;
+      border: 1px solid #e8e4dc;
+      border-radius: 8px;
+      animation: fadeUp 0.35s ease both;
+    }
+    .fact-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #2563eb;
+      background: rgba(37,99,235,0.06);
+      border: 1px solid rgba(37,99,235,0.15);
+      border-radius: 4px;
+      padding: 3px 10px;
+      white-space: nowrap;
+      letter-spacing: 0.06em;
+      margin-top: 1px;
+      flex-shrink: 0;
+    }
+    .fact-text {
+      font-size: 0.875rem;
+      line-height: 1.6;
+      color: #666;
+    }
+
+    /* ── Progress bar ───────────────────────────── */
+    .progress-wrap {
+      width: 100%;
+    }
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .progress-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #bbb;
+    }
+    .progress-value {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 0.95rem;
+      font-weight: 400;
+      color: #999;
+      letter-spacing: 0.04em;
+    }
+    .progress-track {
+      width: 100%;
+      height: 3px;
+      background: #ede9e0;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: #1a1a1a;
+      border-radius: 99px;
+      transition: width 1s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    /* ── Share button ───────────────────────────── */
+    .share-row {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+    .btn-share {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .btn-share:hover    { background: #333; }
+    .btn-share:disabled { opacity: 0.5; cursor: default; }
+    .btn-share svg { flex-shrink: 0; }
+
+    /* ── Page footer ────────────────────────────── */
+    .page-footer {
+      margin-top: 8px;
+      text-align: center;
+      font-size: 0.75rem;
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      color: #ccc;
+    }
+    .page-footer span { color: #e88; }
+
+    /* ── Empty state ────────────────────────────── */
+    .empty-note {
+      color: #ccc;
+      font-size: 0.85rem;
+      padding: 10px 0;
+    }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <h1>Days of the Past</h1>
+  <p>Every dot is a day. Every day is a life.</p>
+</header>
+
+<!-- ── Input ── -->
+<div id="input-section">
+  <div class="field">
+    <label for="birthdate">Your date of birth</label>
+    <input type="date" id="birthdate" />
+  </div>
+  <button class="btn-primary" id="calculate-btn">Calculate My Life</button>
+</div>
+
+<!-- ── Results ── -->
+<div id="results-section">
+
+  <button class="btn-ghost" id="back-btn">← Change date</button>
+
+  <!-- Stats -->
+  <div class="stats-grid">
+    <div class="stat-card accent">
+      <div class="s-label">Days Lived</div>
+      <div class="s-value" id="s-lived">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-label">Your Age</div>
+      <div class="s-value" id="s-age">—</div>
+    </div>
+  </div>
+
+  <!-- Progress bar -->
+  <div class="progress-wrap">
+    <div class="progress-meta">
+      <span class="progress-label">Life elapsed</span>
+      <span class="progress-value" id="prog-label">—</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="prog-fill"></div>
+    </div>
+  </div>
+
+  <!-- Dot grid -->
+  <div class="dot-card">
+    <div class="dot-card-header">
+      <div class="card-title" id="dot-card-title">Your Life in Days &mdash; 75-Year Lifespan</div>
+      <div class="view-toggle">
+        <button id="toggle-days" class="active">Days</button>
+        <button id="toggle-weeks">Weeks</button>
+      </div>
+    </div>
+    <div class="canvas-wrap" id="canvas-wrap">
+      <canvas id="dots-canvas"></canvas>
+      <div id="blink-dot"></div>
+    </div>
+    <div class="dot-legend">
+      <div class="legend-item"><div class="ld past"></div> <span id="legend-past">Days lived</span></div>
+      <div class="legend-item"><div class="ld now"></div> <span id="legend-now">Today</span></div>
+      <div class="legend-item"><div class="ld future"></div> <span id="legend-future">Days ahead</span></div>
+    </div>
+    <div class="share-row">
+      <button class="btn-share" id="share-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+        </svg>
+        Save image
+      </button>
+    </div>
+  </div>
+
+  <!-- Facts -->
+  <div class="facts-card">
+    <div class="card-title">Milestones You've Crossed</div>
+    <div class="facts-list" id="facts-list"></div>
+  </div>
+
+  <!-- Footer -->
+  <p class="page-footer">made with <span>♥</span> by SWYP</p>
+
+</div>
+
+<script>
+  /* ── Constants ───────────────────────────────── */
+  const LIFE_YEARS  = 75;
+  const MS_PER_DAY  = 86_400_000;
+  const TOTAL_DAYS  = Math.round(LIFE_YEARS * 365.25); // 27,394
+  const TOTAL_WEEKS = Math.round(LIFE_YEARS * 52.1775); // 3,913
+
+  /* ── Milestones ──────────────────────────────── */
+  const MILESTONES = [
+    { age:  1, fact: "You celebrated your very first birthday — completing a full orbit around the sun." },
+    { age:  2, fact: "At age 2, most children have a vocabulary of 50–300 words and are starting to string sentences together." },
+    { age:  3, fact: "Your brain reached about 80% of its adult size — one of the fastest growth periods in human development." },
+    { age:  5, fact: "You started school — the beginning of a journey that would fundamentally shape who you are." },
+    { age:  7, fact: "Age 7 is called the 'Age of Reason' across many cultures: the point when children develop genuine moral understanding." },
+    { age: 10, fact: "You hit double digits for the first time. A full decade of life, complete." },
+    { age: 13, fact: "You officially became a teenager. Adolescence — one of life's most turbulent and formative transitions — began." },
+    { age: 16, fact: "Driving age in many countries. A first real taste of independence and the open road." },
+    { age: 18, fact: "You became a legal adult in most of the world. A new chapter of responsibility, choice, and freedom." },
+    { age: 20, fact: "Your teenage years ended. You stepped into your third decade of life." },
+    { age: 21, fact: "Your prefrontal cortex — the brain region governing decisions and impulse control — reached near-full maturity." },
+    { age: 25, fact: "The human brain is fully developed at 25. You finally had the complete cognitive toolkit you were born to grow." },
+    { age: 30, fact: "Research shows episodic memory peaks around age 30. You've built a rich mental archive of experience." },
+    { age: 35, fact: "Studies show creative output often peaks in the mid-30s. Your best ideas may be right now." },
+    { age: 40, fact: "Research shows life satisfaction tends to increase after 40. Knowing yourself has its quiet rewards." },
+    { age: 45, fact: "By 45, most people have worked for roughly 20 years — accumulating a deep well of skill and expertise." },
+    { age: 50, fact: "Half a century of living. You've witnessed more change in technology and society than any prior generation." },
+    { age: 55, fact: "Studies show emotional regulation and empathy improve with age — you handle difficult situations better than ever." },
+    { age: 60, fact: "By age 60, the average person has slept for about 20 years and taken over 100 million steps." },
+    { age: 65, fact: "Traditional retirement age in many countries — a milestone of a life well and truly worked." },
+    { age: 70, fact: "At 70, you've lived through revolutions in computing, communication, medicine, and global culture." },
+  ];
+
+  /* ── State ───────────────────────────────────── */
+  let state = null; // { daysLived, age, viewMode: 'days'|'weeks' }
+
+  /* ── DOM refs ────────────────────────────────── */
+  const inputSection   = document.getElementById('input-section');
+  const resultsSection = document.getElementById('results-section');
+  const birthdateInput = document.getElementById('birthdate');
+  const canvas         = document.getElementById('dots-canvas');
+  const blinkDot       = document.getElementById('blink-dot');
+  const canvasWrap     = document.getElementById('canvas-wrap');
+
+  /* ── Set max date ────────────────────────────── */
+  birthdateInput.max = new Date().toISOString().split('T')[0];
+
+  /* ── Helpers ─────────────────────────────────── */
+  function calcAge(birth, today) {
+    let y = today.getFullYear() - birth.getFullYear();
+    let m = today.getMonth()    - birth.getMonth();
+    let d = today.getDate()     - birth.getDate();
+    if (d < 0) { m--; d += 30; }
+    if (m < 0) { y--; m += 12; }
+    return { years: y, months: m, days: d };
+  }
+
+  function fmt(n) { return n.toLocaleString(); }
+
+  /* ── Draw canvas ─────────────────────────────── */
+  function drawDots() {
+    if (!state) return;
+    const { daysLived, viewMode } = state;
+
+    const isWeeks = viewMode === 'weeks';
+    const total   = isWeeks ? TOTAL_WEEKS : TOTAL_DAYS;
+    const current = isWeeks ? Math.floor(daysLived / 7) : daysLived;
+    const dotSize = isWeeks ? 7 : 4;
+    const gap     = isWeeks ? 3 : 2;
+    const cell    = dotSize + gap;
+    const r       = dotSize / 2;
+
+    const w    = canvasWrap.clientWidth;
+    const cols = Math.floor(w / cell);
+    const rows = Math.ceil(total / cols);
+
+    canvas.width  = cols * cell;
+    canvas.height = rows * cell;
+
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < total; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const cx  = col * cell + r;
+      const cy  = row * cell + r;
+
+      if      (i < current)  ctx.fillStyle = '#1a1a1a'; // lived — black
+      else if (i === current) ctx.fillStyle = '#2563eb'; // today — blue
+      else                   ctx.fillStyle = '#e8e4dc'; // future — pale
+
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    /* position blinking overlay */
+    const todayCol = current % cols;
+    const todayRow = Math.floor(current / cols);
+    blinkDot.style.left   = (todayCol * cell) + 'px';
+    blinkDot.style.top    = (todayRow * cell) + 'px';
+    blinkDot.style.width  = dotSize + 'px';
+    blinkDot.style.height = dotSize + 'px';
+
+    /* update labels */
+    document.getElementById('dot-card-title').innerHTML = isWeeks
+      ? 'Your Life in Weeks &mdash; 75-Year Lifespan'
+      : 'Your Life in Days &mdash; 75-Year Lifespan';
+    document.getElementById('legend-past').textContent    = isWeeks ? 'Weeks lived' : 'Days lived';
+    document.getElementById('legend-now').textContent     = isWeeks ? 'This week'   : 'Today';
+    document.getElementById('legend-future').textContent  = isWeeks ? 'Weeks ahead' : 'Days ahead';
+
+    state.cols = cols;
+  }
+
+  /* ── Render facts ────────────────────────────── */
+  function renderFacts(ageYears) {
+    const list = document.getElementById('facts-list');
+    list.innerHTML = '';
+
+    const passed = MILESTONES.filter(m => m.age <= ageYears).reverse();
+
+    if (passed.length === 0) {
+      list.innerHTML = '<p class="empty-note">More milestones await just ahead — keep going.</p>';
+      return;
+    }
+
+    passed.forEach((m, i) => {
+      const el = document.createElement('div');
+      el.className = 'fact-row';
+      el.style.animationDelay = (i * 0.055) + 's';
+      el.innerHTML = `
+        <span class="fact-badge">Age ${m.age}</span>
+        <span class="fact-text">${m.fact}</span>
+      `;
+      list.appendChild(el);
+    });
+  }
+
+  /* ── Calculate ───────────────────────────────── */
+  document.getElementById('calculate-btn').addEventListener('click', () => {
+    const val = birthdateInput.value;
+    if (!val) { birthdateInput.focus(); return; }
+
+    const birth = new Date(val + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (birth > today) {
+      alert('Date of birth cannot be in the future.');
+      return;
+    }
+
+    const daysLived = Math.floor((today - birth) / MS_PER_DAY);
+    const pct       = ((daysLived / TOTAL_DAYS) * 100).toFixed(1);
+    const age           = calcAge(birth, today);
+
+    document.getElementById('s-lived').textContent = fmt(daysLived);
+    document.getElementById('s-age').textContent   = `${age.years}y ${age.months}m`;
+
+    document.getElementById('prog-label').textContent = pct + '% of 75 years';
+    // Animate fill after paint
+    requestAnimationFrame(() => {
+      document.getElementById('prog-fill').style.width = pct + '%';
+    });
+
+    state = { daysLived, age, viewMode: 'days' };
+
+    inputSection.style.display = 'none';
+    resultsSection.classList.add('visible');
+
+    /* double-rAF ensures layout is computed before we read clientWidth */
+    requestAnimationFrame(() => requestAnimationFrame(drawDots));
+
+    renderFacts(age.years);
+  });
+
+  /* ── Share card ──────────────────────────────── */
+  async function generateShareCard() {
+    await document.fonts.ready;
+
+    const W = 1200, H = 675, P = 60;
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const ctx = c.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#f6f5f0';
+    ctx.fillRect(0, 0, W, H);
+
+    // Inner border
+    ctx.strokeStyle = '#e8e4dc';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(28.5, 28.5, W - 57, H - 57);
+
+    // Title
+    ctx.fillStyle = '#1a1a1a';
+    ctx.font = '300 52px "Cormorant Garamond", Georgia, serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('DAYS OF THE PAST', P, P + 50);
+
+    // Subtitle
+    ctx.fillStyle = '#bbb';
+    ctx.font = '300 13px "DM Sans", system-ui, sans-serif';
+    ctx.fillText('a life in perspective', P, P + 74);
+
+    // Divider
+    ctx.strokeStyle = '#e8e4dc';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(P, P + 96); ctx.lineTo(W - P, P + 96);
+    ctx.stroke();
+
+    // Stats
+    const statsY = P + 132;
+    const statsData = [
+      { label: 'DAYS LIVED',    value: document.getElementById('s-lived').textContent },
+      { label: 'AGE',           value: document.getElementById('s-age').textContent },
+      { label: 'LIFE ELAPSED',  value: document.getElementById('prog-label').textContent },
+    ];
+    const colW = (W - P * 2) / 3;
+    statsData.forEach((s, i) => {
+      const x = P + i * colW;
+      ctx.fillStyle = '#bbb';
+      ctx.font = '400 11px "DM Sans", system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(s.label, x, statsY);
+      ctx.fillStyle = i === 0 ? '#2563eb' : '#1a1a1a';
+      ctx.font = '600 28px "DM Sans", system-ui, sans-serif';
+      ctx.fillText(s.value, x, statsY + 34);
+    });
+
+    // Dot grid (always weeks for the card — fits perfectly)
+    const dotY   = statsY + 72;
+    const dotSize = 7, dotGap = 2, cell = dotSize + dotGap, r = dotSize / 2;
+    const cols    = Math.floor((W - P * 2) / cell);
+    const weeksLived = Math.floor(state.daysLived / 7);
+
+    for (let i = 0; i < TOTAL_WEEKS; i++) {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      const cx  = P + col * cell + r;
+      const cy  = dotY + row * cell + r;
+      if      (i < weeksLived)  ctx.fillStyle = '#1a1a1a';
+      else if (i === weeksLived) ctx.fillStyle = '#2563eb';
+      else                      ctx.fillStyle = '#e8e4dc';
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Legend below dots
+    const rows   = Math.ceil(TOTAL_WEEKS / cols);
+    const legY   = dotY + rows * cell + 22;
+    const legend = [
+      { color: '#1a1a1a', label: 'Weeks lived' },
+      { color: '#2563eb', label: 'This week'   },
+      { color: '#e8e4dc', label: 'Weeks ahead', stroke: '#d8d4cc' },
+    ];
+    let lx = P;
+    legend.forEach(({ color, label, stroke }) => {
+      ctx.fillStyle = color;
+      if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = 0.8; }
+      ctx.beginPath();
+      ctx.arc(lx + 5, legY - 4, 5, 0, Math.PI * 2);
+      ctx.fill();
+      if (stroke) { ctx.stroke(); ctx.lineWidth = 1; }
+      ctx.fillStyle = '#aaa';
+      ctx.font = '300 12px "DM Sans", system-ui, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(label, lx + 16, legY);
+      lx += ctx.measureText(label).width + 36;
+    });
+
+    // Branding
+    ctx.fillStyle = '#ccc';
+    ctx.font = '300 12px "DM Sans", system-ui, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('made with \u2665 by SWYP', W - P, H - 34);
+
+    return c;
+  }
+
+  async function shareCard() {
+    const btn = document.getElementById('share-btn');
+    btn.textContent = 'Generating…';
+    btn.disabled = true;
+    try {
+      const card = await generateShareCard();
+      const blob = await new Promise(res => card.toBlob(res, 'image/png'));
+      const file = new File([blob], 'days-of-the-past.png', { type: 'image/png' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          title: 'Days of the Past',
+          text: `I've lived ${document.getElementById('s-lived').textContent} days so far.`,
+          files: [file],
+        });
+      } else {
+        const url = URL.createObjectURL(blob);
+        const a   = document.createElement('a');
+        a.href = url; a.download = 'days-of-the-past.png'; a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (e) {
+      if (e.name !== 'AbortError') console.error(e);
+    } finally {
+      btn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg> Save image`;
+      btn.disabled = false;
+    }
+  }
+
+  document.getElementById('share-btn').addEventListener('click', shareCard);
+
+  /* ── View toggle ─────────────────────────────── */
+  document.getElementById('toggle-days').addEventListener('click', () => {
+    if (!state || state.viewMode === 'days') return;
+    state.viewMode = 'days';
+    document.getElementById('toggle-days').classList.add('active');
+    document.getElementById('toggle-weeks').classList.remove('active');
+    drawDots();
+  });
+
+  document.getElementById('toggle-weeks').addEventListener('click', () => {
+    if (!state || state.viewMode === 'weeks') return;
+    state.viewMode = 'weeks';
+    document.getElementById('toggle-weeks').classList.add('active');
+    document.getElementById('toggle-days').classList.remove('active');
+    drawDots();
+  });
+
+  /* ── Back ────────────────────────────────────── */
+  document.getElementById('back-btn').addEventListener('click', () => {
+    resultsSection.classList.remove('visible');
+    inputSection.style.display = 'flex';
+    state = null;
+    blinkDot.style.width  = '0';
+    blinkDot.style.height = '0';
+    document.getElementById('prog-fill').style.width = '0%';
+    document.getElementById('toggle-days').classList.add('active');
+    document.getElementById('toggle-weeks').classList.remove('active');
+  });
+
+  /* ── Resize ──────────────────────────────────── */
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(drawDots, 150);
+  });
+</script>
+</body>
+</html>
